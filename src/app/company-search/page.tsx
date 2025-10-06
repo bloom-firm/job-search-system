@@ -228,12 +228,15 @@ export default function CompanySearchPage() {
                         <Users className="w-4 h-4 mr-2 text-gray-500" />
                         <span>{company.size}</span>
                       </div>
-                      <div className="flex items-center text-gray-600 text-sm">
-                        <Briefcase className="w-4 h-4 mr-2 text-gray-500" />
-                        <span className="font-medium text-blue-600">
+                      <Link
+                        href={`/company-search/${encodeURIComponent(company.name)}`}
+                        className="flex items-center text-blue-600 hover:text-blue-700 transition-colors text-sm"
+                      >
+                        <Briefcase className="w-4 h-4 mr-2" />
+                        <span className="font-medium">
                           {company.jobCount}件の求人
                         </span>
-                      </div>
+                      </Link>
                     </div>
 
                     <div className="pt-4 border-t border-gray-200">
@@ -241,7 +244,7 @@ export default function CompanySearchPage() {
                         href={`/company-search/${encodeURIComponent(company.name)}`}
                         className="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
                       >
-                        この企業の求人を見る
+                        この企業の詳細を見る
                       </Link>
                     </div>
                   </div>
