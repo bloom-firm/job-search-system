@@ -2,6 +2,7 @@ export interface Job {
   id: string
   title: string
   company_name: string
+  company_id?: number | null
   company_size: string
   industry_category: string
   job_type: string

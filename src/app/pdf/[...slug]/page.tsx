@@ -21,7 +21,9 @@ export default function PdfViewerPage() {
 
   const companyName = decodeURIComponent(slug[0])
   const jobTitle = decodeURIComponent(slug[1])
-  const pdfPath = `/pdf/${encodeURIComponent(companyName)}/${encodeURIComponent(jobTitle)}.pdf`
+
+  // APIルート経由でPDFを取得（正規化処理はAPIルートで実施）
+  const pdfPath = `/api/pdf-proxy/${encodeURIComponent(companyName)}/${encodeURIComponent(jobTitle)}`
 
   const handleClose = () => {
     if (window.opener) {

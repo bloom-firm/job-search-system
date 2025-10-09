@@ -6,6 +6,7 @@ import { Search, Building, Users, Briefcase, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
 interface Company {
+  id?: number
   name: string
   industry: string
   size: string
@@ -18,7 +19,6 @@ export default function CompanySearchPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchKeyword, setSearchKeyword] = useState('')
-  const [industryFilter, setIndustryFilter] = useState('')
 
   useEffect(() => {
     fetchCompanies()
@@ -26,7 +26,7 @@ export default function CompanySearchPage() {
 
   useEffect(() => {
     filterCompanies()
-  }, [searchKeyword, industryFilter, companies])
+  }, [searchKeyword, companies])
 
   const fetchCompanies = async () => {
     try {
@@ -55,6 +55,16 @@ export default function CompanySearchPage() {
 
       console.log('全取得件数:', allJobs.length)
 
+      // companies_masterから企業IDを取得
+      const { data: companiesMaster } = await supabase
+        .from('companies_master')
+        .select('id, company_name')
+
+      const companyIdMap = new Map<string, number>()
+      companiesMaster?.forEach(company => {
+        companyIdMap.set(company.company_name, company.id)
+      })
+
       // 企業名でグループ化
       const companyMap = new Map<string, Company>()
       let skippedCount = 0
@@ -67,6 +77,7 @@ export default function CompanySearchPage() {
 
         if (!companyMap.has(job.company_name)) {
           companyMap.set(job.company_name, {
+            id: companyIdMap.get(job.company_name),
             name: job.company_name,
             industry: job.industry_category,
             size: job.company_size,
@@ -102,13 +113,6 @@ export default function CompanySearchPage() {
     if (searchKeyword) {
       filtered = filtered.filter(company =>
         company.name.toLowerCase().includes(searchKeyword.toLowerCase())
-      )
-    }
-
-    // 業界フィルタ
-    if (industryFilter) {
-      filtered = filtered.filter(company =>
-        company.industry.toLowerCase().includes(industryFilter.toLowerCase())
       )
     }
 
@@ -157,20 +161,6 @@ export default function CompanySearchPage() {
               >
                 検索
               </button>
-            </div>
-
-            {/* 業界フィルタ */}
-            <div className="bg-white border border-gray-300 rounded-lg p-6">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                業界
-              </label>
-              <input
-                type="text"
-                value={industryFilter}
-                onChange={(e) => setIndustryFilter(e.target.value)}
-                placeholder="業界を入力（例：IT、金融、製造業）"
-                className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
             </div>
           </form>
         </div>
@@ -229,7 +219,7 @@ export default function CompanySearchPage() {
                         <span>{company.size}</span>
                       </div>
                       <Link
-                        href={`/company-search/${encodeURIComponent(company.name)}`}
+                        href={`/search?company=${encodeURIComponent(company.name)}`}
                         className="flex items-center text-blue-600 hover:text-blue-700 transition-colors text-sm"
                       >
                         <Briefcase className="w-4 h-4 mr-2" />
@@ -240,12 +230,18 @@ export default function CompanySearchPage() {
                     </div>
 
                     <div className="pt-4 border-t border-gray-200">
-                      <Link
-                        href={`/company-search/${encodeURIComponent(company.name)}`}
-                        className="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-                      >
-                        この企業の詳細を見る
-                      </Link>
+                      {company.id ? (
+                        <Link
+                          href={`/companies/${company.id}`}
+                          className="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                        >
+                          この企業の詳細を見る
+                        </Link>
+                      ) : (
+                        <div className="block w-full px-4 py-2 bg-gray-300 text-gray-500 text-center rounded-md text-sm font-medium cursor-not-allowed">
+                          詳細情報なし
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

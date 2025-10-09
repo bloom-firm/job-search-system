@@ -1,5 +1,6 @@
 import { MapPin, Briefcase, DollarSign, Calendar, Users, Building, FileText, ExternalLink } from 'lucide-react'
 import { Job } from '@/lib/types/job'
+import Link from 'next/link'
 
 interface JobCardProps {
   job: Job
@@ -36,7 +37,16 @@ export default function JobCard({ job }: JobCardProps) {
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
           {job.title}
         </h3>
-        <p className="text-lg text-blue-600 font-medium">{job.company_name}</p>
+        {job.company_id ? (
+          <Link
+            href={`/companies/${job.company_id}`}
+            className="text-lg text-blue-600 font-medium hover:text-blue-700 hover:underline cursor-pointer inline-block"
+          >
+            {job.company_name}
+          </Link>
+        ) : (
+          <p className="text-lg text-blue-600 font-medium">{job.company_name}</p>
+        )}
       </div>
 
       <p className="text-gray-600 mb-4 line-clamp-3 text-sm">{job.description}</p>

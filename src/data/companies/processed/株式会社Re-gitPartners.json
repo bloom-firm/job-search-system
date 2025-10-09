@@ -1,0 +1,85 @@
+{
+  "company_name": "株式会社Re-gitPartners",
+  "public": {
+    "basic_info": {
+      "official_name": "株式会社Re-gitPartners",
+      "founded": "推定: 2021年7月",
+      "headquarters": "推定: 東京都渋谷区渋谷",
+      "employees": "推定: 約15名",
+      "listing_status": "未上場",
+      "business_description": "エンジニアおよびデジタル人材に特化した人材紹介・採用コンサルティングを中心に、スカウト運用代行、採用ブランディング、面接プロセス設計、組織設計支援を提供。SaaS・ITスタートアップ向けにGitHub等のポートフォリオ評価を活用した候補者サーチを強みとし、採用効率と候補者体験の向上を支援する。",
+      "location": "推定: 本社のみ"
+    },
+    "work_style": {
+      "work_format": "",
+      "annual_holidays": "",
+      "benefits": ""
+    }
+  },
+  "confidential": {
+    "selection_process": {
+      "flow": "",
+      "speed": "",
+      "key_points": []
+    },
+    "recruitment_reality": {
+      "education_requirements": "MARCH以上",
+      "job_change_limit": "",
+      "age_preference": "",
+      "other_criteria": [],
+      "characteristics": []
+    },
+    "internal_memo": {
+      "company_characteristics": [
+        "・ベイカレクローン",
+        "・CXO輩出を推進ため、上流の案件多い",
+        "・ハンズオン型のコンサルティングサービス",
+        "・戦略･構想策定からオペレーション改革、テクノロジー導入まで幅広いサービスを提供",
+        "・働き甲斐のある会社」ベストカンパニーに5年連続選出。（2024年は注目企業として表彰式にスピーチ登壇）",
+        "・2年連続で日本における急成長企業ランキング1位（2023、2024）",
+        "・未経験可",
+        "・ポジションは戦略、人事、BPR、IT、AIコンサル、エンジニアまで多数あり",
+        "・大阪オフィス有",
+        "・社員400人",
+        "・リモート可（基本は週2リモート週3出社）",
+        "・営業ポジションあり／10：00～18：00",
+        "・”100％プライム案件””コンペ勝率約8割” ”平均売上高7,000億円以上のエンタープライズ企業” に対し、約600件のプロジェクトを成功",
+        "・MARCH以上",
+        "・社会人経験２年以上",
+        "・在職中であること",
+        "・一応高校卒可"
+      ],
+      "selection_notes": [],
+      "proposal_tips": [],
+      "other_notes": []
+    },
+    "ng_items": {
+      "concurrent_ng_companies": [],
+      "reapplication_rule": "",
+      "applied_candidates_notes": "",
+      "other_prohibitions": []
+    },
+    "application_system": {
+      "url": "",
+      "id": "",
+      "password": "",
+      "special_notes": "",
+      "ats": ""
+    },
+    "contract_info": {
+      "commission_rate": "35.00%",
+      "refund_policy": {},
+      "contract_period": "2024-06-13 ~",
+      "special_terms": "",
+      "contract_status": "契約有り",
+      "email": "jio.shinohara@regrit-p.com",
+      "url": "https://regrit-p.com/"
+    },
+    "target_details": {
+      "desired_profiles": [],
+      "target_companies": [],
+      "technical_requirements": [],
+      "department_needs": []
+    }
+  }
+}

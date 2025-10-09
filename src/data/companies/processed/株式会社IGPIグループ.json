@@ -1,0 +1,80 @@
+{
+  "company_name": "株式会社IGPIグループ",
+  "public": {
+    "basic_info": {
+      "official_name": "株式会社IGPIグループ",
+      "founded": "2007年4月",
+      "headquarters": "東京都千代田区丸の内",
+      "employees": "約600名",
+      "listing_status": "未上場",
+      "business_description": "経営共創基盤（IGPI）を中核とする経営コンサルティング／投資グループ。企業の経営改革、事業再生、M&A・PMI、新規事業開発をハンズオンで実行支援し、事業投資やファンド運用、プロ経営者の派遣・CxO育成、官公庁・自治体向け政策案件や地域活性化まで一体で提供する。",
+      "location": "東京本社のほか、大阪、名古屋に国内拠点、海外はシンガポールおよびベトナム（ハノイ）に拠点あり"
+    },
+    "work_style": {
+      "work_format": "",
+      "annual_holidays": "",
+      "benefits": ""
+    }
+  },
+  "confidential": {
+    "selection_process": {
+      "flow": "",
+      "speed": "",
+      "key_points": []
+    },
+    "recruitment_reality": {
+      "education_requirements": "学歴不問",
+      "job_change_limit": "",
+      "age_preference": "",
+      "other_criteria": [],
+      "characteristics": []
+    },
+    "internal_memo": {
+      "company_characteristics": [
+        "・社員220人",
+        "・フレックス",
+        "・ハンズオン型、戦略策定から実行までするのが他社との違い",
+        "・支援内容は企業変革・資本市場対策・M＆A・製造業支援・新規事業開発",
+        "・企業再生、事業再編、新規事業立ち上げ、M&A支援に強み",
+        "・対症療法に終わらない、根本からの組織・事業変革遂行、事業再生を支援",
+        "・組織能力の開発：自社内にイノベーションを継続的に生み出す仕組み",
+        "・AI・データ活用を含む事業具体化、組織構造変革",
+        "・官公庁案件も有り、政策立案支援、地方再生",
+        "・ポジションは「ものづくり戦略カンパニー（製造業特化の専門組織）」「IGPIカンパニー」「DIカンパニー」",
+        "・学歴不問（実質早慶以上？）",
+        "・大手企業勤務３年以上"
+      ],
+      "selection_notes": [],
+      "proposal_tips": [],
+      "other_notes": []
+    },
+    "ng_items": {
+      "concurrent_ng_companies": [],
+      "reapplication_rule": "",
+      "applied_candidates_notes": "",
+      "other_prohibitions": []
+    },
+    "application_system": {
+      "url": "https://js02.jposting.net/igpi/agent/",
+      "id": ":bloom",
+      "password": "",
+      "special_notes": "",
+      "ats": ""
+    },
+    "contract_info": {
+      "commission_rate": "",
+      "refund_policy": {},
+      "contract_period": "",
+      "special_terms": "",
+      "contract_status": "",
+      "email": "m.morimoto@igpi.co.jp",
+      "url": ""
+    },
+    "target_details": {
+      "desired_profiles": [],
+      "target_companies": [],
+      "technical_requirements": [],
+      "department_needs": []
+    }
+  }
+}

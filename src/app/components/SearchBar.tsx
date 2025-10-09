@@ -9,8 +9,6 @@ export interface SearchFilters {
   salaryMin: number
   salaryMax: number
   locations: string[]
-  jobType: string
-  industry: string
 }
 
 interface SearchBarProps {
@@ -23,8 +21,6 @@ export default function SearchBar({ onSearch, placeholder = "キーワードで�
   const [salaryMin, setSalaryMin] = useState(300)
   const [salaryMax, setSalaryMax] = useState(2000)
   const [selectedLocations, setSelectedLocations] = useState<string[]>([])
-  const [jobType, setJobType] = useState('')
-  const [industry, setIndustry] = useState('')
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
 
   // キーワード以外のフィルタ変更時にリアルタイム検索
@@ -33,11 +29,9 @@ export default function SearchBar({ onSearch, placeholder = "キーワードで�
       keyword,
       salaryMin,
       salaryMax,
-      locations: selectedLocations,
-      jobType,
-      industry
+      locations: selectedLocations
     })
-  }, [salaryMin, salaryMax, selectedLocations, jobType, industry])
+  }, [salaryMin, salaryMax, selectedLocations])
 
   const handleLocationApply = (locations: string[]) => {
     setSelectedLocations(locations)
@@ -50,9 +44,7 @@ export default function SearchBar({ onSearch, placeholder = "キーワードで�
       keyword,
       salaryMin,
       salaryMax,
-      locations: selectedLocations,
-      jobType,
-      industry
+      locations: selectedLocations
     })
   }
 
@@ -143,34 +135,6 @@ export default function SearchBar({ onSearch, placeholder = "キーワードで�
                 : '勤務地を選択'}
             </span>
           </button>
-        </div>
-
-        {/* 職種 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            職種
-          </label>
-          <input
-            type="text"
-            value={jobType}
-            onChange={(e) => setJobType(e.target.value)}
-            placeholder="例: エンジニア、営業、デザイナー"
-            className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-
-        {/* 業界 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            業界
-          </label>
-          <input
-            type="text"
-            value={industry}
-            onChange={(e) => setIndustry(e.target.value)}
-            placeholder="業界を入力（例：IT、金融、製造業）"
-            className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
         </div>
       </div>
 

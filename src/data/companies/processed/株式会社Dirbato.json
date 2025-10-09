@@ -1,0 +1,88 @@
+{
+  "company_name": "株式会社Dirbato",
+  "public": {
+    "basic_info": {
+      "official_name": "株式会社Dirbato",
+      "founded": "2018年10月",
+      "headquarters": "東京都港区虎ノ門",
+      "employees": "約800名",
+      "listing_status": "未上場",
+      "business_description": "企業のデジタル変革を支援するテクノロジーコンサルティングを中心に、クラウド導入・運用、データ分析・AI活用、アジャイル開発、サイバーセキュリティ、基幹システム刷新、PMO/上流設計まで一気通貫で提供。大手企業の大規模案件に強みを持つ。",
+      "location": "大阪市、名古屋市、福岡市に拠点あり"
+    },
+    "work_style": {
+      "work_format": "",
+      "annual_holidays": "",
+      "benefits": ""
+    }
+  },
+  "confidential": {
+    "selection_process": {
+      "flow": "",
+      "speed": "",
+      "key_points": []
+    },
+    "recruitment_reality": {
+      "education_requirements": "高校以上",
+      "job_change_limit": "",
+      "age_preference": "",
+      "other_criteria": [
+        "エンジニア経験3年以上"
+      ],
+      "characteristics": []
+    },
+    "internal_memo": {
+      "company_characteristics": [
+        "・ベイカレクローン",
+        "・ITに超特化",
+        "・エンジニアの価値向上を理念",
+        "・2018年に創業で1500人以上の急成長中（大企業の部類に入りつつある）",
+        "・新卒160人/月採用",
+        "・100％IT出身",
+        "・戦略→企画→実装を行う。ベンダーコントロール",
+        "・企画構想が多",
+        "・職場環境良（富士山、デスク多）",
+        "・エンジニア出身者が躓く箇所の知見を蓄積、研修",
+        "・官公庁よりも企業案件が多い",
+        "・営業職も実行フェーズまで携われる",
+        "・高校以上（IT経験重視）",
+        "・エンジニア経験3年以上",
+        "・要件定義、PM補佐、開発PL、顧客折衝のうち２つ以上経験",
+        "・実務経験５年以上"
+      ],
+      "selection_notes": [],
+      "proposal_tips": [],
+      "other_notes": []
+    },
+    "ng_items": {
+      "concurrent_ng_companies": [],
+      "reapplication_rule": "",
+      "applied_candidates_notes": "",
+      "other_prohibitions": []
+    },
+    "application_system": {
+      "url": "",
+      "id": "",
+      "password": "",
+      "special_notes": "",
+      "ats": "HRMOS"
+    },
+    "contract_info": {
+      "commission_rate": "35.00%",
+      "refund_policy": {
+        "1ヶ月": "80%"
+      },
+      "contract_period": "2024-05-10 ~",
+      "special_terms": "",
+      "contract_status": "契約有り",
+      "email": "wataru.suganami.b537@dirbato.co.jp",
+      "url": "https://www.dirbato.co.jp/"
+    },
+    "target_details": {
+      "desired_profiles": [],
+      "target_companies": [],
+      "technical_requirements": [],
+      "department_needs": []
+    }
+  }
+}
