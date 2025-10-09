@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Environment variables (機密情報)
+.env.local
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
