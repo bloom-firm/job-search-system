@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Search, Building, Users, Briefcase, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { formatErrorMessage } from '@/lib/utils/errors'
 
 interface Company {
   id?: number
@@ -20,20 +21,12 @@ export default function CompanySearchPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchKeyword, setSearchKeyword] = useState('')
 
-  useEffect(() => {
-    fetchCompanies()
-  }, [])
-
-  useEffect(() => {
-    filterCompanies()
-  }, [searchKeyword, companies])
-
-  const fetchCompanies = async () => {
+  const fetchCompanies = useCallback(async () => {
     try {
       const supabase = createClient()
 
       // 全データ取得のため、複数回に分けて取得
-      let allJobs: any[] = []
+      let allJobs: { company_name: string; industry_category: string; company_size: string }[] = []
       let rangeStart = 0
       const rangeSize = 1000
 
@@ -98,15 +91,16 @@ export default function CompanySearchPage() {
 
       setCompanies(companiesArray)
       setFilteredCompanies(companiesArray)
-    } catch (err: any) {
-      console.error('Error fetching companies:', err)
-      setError(err.message || '企業情報の取得に失敗しました。')
+    } catch (error: unknown) {
+      console.error('Error fetching companies:', error)
+      const errorMessage = formatErrorMessage(error, '企業情報の取得に失敗しました。')
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const filterCompanies = () => {
+  const filterCompanies = useCallback(() => {
     let filtered = companies
 
     // 企業名検索
@@ -117,7 +111,15 @@ export default function CompanySearchPage() {
     }
 
     setFilteredCompanies(filtered)
-  }
+  }, [companies, searchKeyword])
+
+  useEffect(() => {
+    fetchCompanies()
+  }, [fetchCompanies])
+
+  useEffect(() => {
+    filterCompanies()
+  }, [filterCompanies])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

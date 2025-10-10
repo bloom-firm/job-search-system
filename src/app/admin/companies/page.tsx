@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { FileText, CheckCircle, XCircle, Loader2, AlertCircle } from 'lucide-react'
+import { formatErrorMessage } from '@/lib/utils/errors'
 
 interface ProcessResult {
   success: boolean
@@ -27,11 +28,12 @@ export default function AdminCompaniesPage() {
       const data: ProcessResult = await response.json()
       setResult(data)
       setProgress({ current: data.processed, total: data.processed })
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = formatErrorMessage(error, '処理中にエラーが発生しました')
       setResult({
         success: false,
         processed: 0,
-        errors: [error.message || '処理中にエラーが発生しました'],
+        errors: [errorMessage],
       })
     } finally {
       setProcessing(false)

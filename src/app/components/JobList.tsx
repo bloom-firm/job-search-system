@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Job } from '@/lib/types/job'
+import type { Job } from '@/lib/types'
 import JobCard from './JobCard'
 import SearchBar, { SearchFilters } from './SearchBar'
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { formatErrorMessage } from '@/lib/utils/errors'
 
 const ITEMS_PER_PAGE = 24
 
@@ -23,18 +24,7 @@ export default function JobList() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
 
-  useEffect(() => {
-    setCurrentPage(1)
-    fetchJobs(1, true)
-  }, [filters])
-
-  useEffect(() => {
-    if (currentPage > 1) {
-      fetchJobs(currentPage, false)
-    }
-  }, [currentPage])
-
-  const fetchJobs = async (page: number = 1, isInitial: boolean = false) => {
+  const fetchJobs = useCallback(async (page: number = 1, isInitial: boolean = false) => {
     if (isInitial) {
       setIsInitialLoading(true)
     } else {
@@ -135,8 +125,8 @@ export default function JobList() {
       }
 
       // キーワード検索時は複数ページに分けて取得（Supabaseの1000件制限対策）
-      let newJobs: any[] = []
-      let countResult: any = null // スコープ外で定義
+      let newJobs: Job[] = []
+      let countResult: { count: number | null; error: unknown } | null = null // スコープ外で定義
 
       if (searchKeywords.length > 0) {
         console.log('⚠️ キーワード検索時：複数ページで全件取得（1000件制限回避）')
@@ -283,14 +273,26 @@ export default function JobList() {
         setJobs(newJobs)
         setTotalCount(total)
       }
-    } catch (err: any) {
-      console.error('Error fetching jobs:', err)
-      setError(err.message || '求人情報の取得に失敗しました。')
+    } catch (error: unknown) {
+      console.error('Error fetching jobs:', error)
+      const errorMessage = formatErrorMessage(error, '求人情報の取得に失敗しました。')
+      setError(errorMessage)
     } finally {
       setIsInitialLoading(false)
       setIsPageChanging(false)
     }
-  }
+  }, [filters])
+
+  useEffect(() => {
+    setCurrentPage(1)
+    fetchJobs(1, true)
+  }, [fetchJobs])
+
+  useEffect(() => {
+    if (currentPage > 1) {
+      fetchJobs(currentPage, false)
+    }
+  }, [currentPage, fetchJobs])
 
   const handleSearch = (newFilters: SearchFilters) => {
     setFilters(newFilters)

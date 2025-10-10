@@ -14,7 +14,9 @@ export interface Job {
   requirements: string
   preferred_skills?: string
   company_culture?: string
+  benefits?: string
   selection_process?: string
+  original_md_content?: string
   status: string
   expires_at?: string
   created_at: string

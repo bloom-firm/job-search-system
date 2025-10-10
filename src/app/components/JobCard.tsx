@@ -1,4 +1,4 @@
-import { MapPin, Briefcase, DollarSign, Calendar, Users, Building, FileText, ExternalLink } from 'lucide-react'
+import { MapPin, Briefcase, DollarSign, Calendar, Users, Building, FileText } from 'lucide-react'
 import { Job } from '@/lib/types/job'
 import Link from 'next/link'
 

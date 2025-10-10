@@ -3,8 +3,9 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Job } from '@/lib/types/job'
+import type { Job } from '@/lib/types'
 import { ArrowLeft, MapPin, Briefcase, DollarSign, Building, Users, FileText, Loader2 } from 'lucide-react'
+import { formatErrorMessage } from '@/lib/utils/errors'
 
 export default function JobDetailPage() {
   const params = useParams()
@@ -27,9 +28,10 @@ export default function JobDetailPage() {
 
         if (error) throw error
         setJob(data)
-      } catch (err: any) {
-        console.error('Error fetching job:', err)
-        setError(err.message || '求人情報の取得に失敗しました。')
+      } catch (error: unknown) {
+        console.error('Error fetching job:', error)
+        const errorMessage = formatErrorMessage(error, '求人情報の取得に失敗しました。')
+        setError(errorMessage)
       } finally {
         setLoading(false)
       }

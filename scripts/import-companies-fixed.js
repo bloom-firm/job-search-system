@@ -18,7 +18,7 @@ async function checkAndCreateTable() {
   console.log('🔍 テーブル構造を確認中...\n')
 
   // Check if companies_master table exists
-  const { data: tables, error: tableError } = await supabase
+  const { error: tableError } = await supabase
     .from('companies_master')
     .select('*')
     .limit(1)
@@ -79,7 +79,7 @@ async function importCompanies() {
         console.log(`📤 [${index + 1}/${jsonFiles.length}] ${companyData.company_name} を送信中...`)
 
         // Insert or update (upsert) into Supabase
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('companies_master')
           .upsert(record, {
             onConflict: 'company_name'

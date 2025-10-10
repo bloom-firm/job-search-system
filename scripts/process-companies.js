@@ -5,13 +5,11 @@ require('dotenv').config({ path: path.join(__dirname, '../.env.local') })
 
 const RAW_DIR = path.join(__dirname, '../src/data/companies/raw')
 const PROCESSED_DIR = path.join(__dirname, '../src/data/companies/processed')
-const MASTER_FILE = path.join(PROCESSED_DIR, 'companies_master.json')
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY
 
 // convertToJSON関数（全面改善版）
 function convertToJSON(filename, rawText) {
   const companyName = filename.replace('.txt', '')
-  const lines = rawText.split('\n')
 
   const result = {
     company_name: companyName,

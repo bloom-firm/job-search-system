@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
 import { createClient } from '@/lib/supabase/server'
+import { formatErrorMessage } from '@/lib/utils/errors'
 
 export async function POST(request: NextRequest) {
   try {
@@ -80,10 +81,11 @@ export async function POST(request: NextRequest) {
       error: 'PDF not found'
     }, { status: 404 })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = formatErrorMessage(error)
     return NextResponse.json({
       success: false,
-      error: error.message
+      error: errorMessage
     }, { status: 500 })
   }
 }

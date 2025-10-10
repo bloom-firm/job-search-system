@@ -1,114 +1,21 @@
 'use client'
 
-import { use, useEffect, useState } from 'react'
+import { use, useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Building2, MapPin, Users, Calendar, TrendingUp, ArrowLeft, AlertTriangle, Eye, EyeOff, Briefcase, FileText, DollarSign, Globe, Target, Lightbulb, Package, Handshake, BarChart3 } from 'lucide-react'
-
-interface CompanyData {
-  id: number
-  company_name: string
-  basic_info?: {
-    official_name?: string
-    founded?: string
-    headquarters?: string
-    employees?: string
-    listing_status?: string
-    business_description?: string
-    location?: string
-    vision?: string
-    products?: string
-    business_model?: string
-    clients?: string
-    competitors?: string
-  }
-  work_style?: {
-    work_format?: string
-    annual_holidays?: string
-    benefits?: string
-  }
-  selection_process?: {
-    flow?: string
-    speed?: string
-    key_points?: string
-  }
-  recruitment_reality?: {
-    education_requirements?: string
-    job_change_limit?: string
-    age_preference?: string
-    other_criteria?: string[]
-    characteristics?: string[]
-  }
-  internal_memo?: {
-    company_characteristics?: string[]
-    selection_notes?: string[]
-    proposal_tips?: string[]
-    other_notes?: string[]
-  }
-  contract_info?: {
-    commission_rate?: string
-    refund_policy?: any
-    contract_period?: string
-    special_terms?: string
-    contract_status?: string
-    email?: string
-    url?: string
-  }
-  created_at: string
-  updated_at: string
-}
+import type { CompanyMaster } from '@/lib/types'
+import { formatErrorMessage } from '@/lib/utils/errors'
 
 export default function CompanyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const [company, setCompany] = useState<CompanyData | null>(null)
+  const [company, setCompany] = useState<CompanyMaster | null>(null)
   const [loading, setLoading] = useState(true)
   const [showConfidential, setShowConfidential] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    fetchCompany()
-  }, [id])
-
-  const fetchCompany = async () => {
-    try {
-      const supabase = createClient()
-
-      const { data, error } = await supabase
-        .from('companies_master')
-        .select('*')
-        .eq('id', id)
-        .single()
-
-      if (error || !data) {
-        router.push('/company-search')
-        return
-      }
-
-      setCompany(data as CompanyData)
-
-      // 不足情報をチェックして自動取得
-      const basicInfo = data.basic_info || {}
-      const needsEnrichment =
-        !basicInfo.vision ||
-        !basicInfo.products ||
-        !basicInfo.business_model ||
-        !basicInfo.clients ||
-        !basicInfo.competitors
-
-      if (needsEnrichment) {
-        console.log('🔄 Auto-enriching company info...')
-        enrichCompanyInfo(data.id, data.company_name, basicInfo.official_name)
-      }
-    } catch (err) {
-      console.error('Error fetching company:', err)
-      router.push('/company-search')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const enrichCompanyInfo = async (companyId: number, companyName: string, officialName?: string) => {
+  const enrichCompanyInfo = useCallback(async (companyId: number, companyName: string, officialName?: string) => {
     try {
       const response = await fetch('/api/enrich-company', {
         method: 'POST',
@@ -136,11 +43,53 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
         } : null)
         console.log('✅ Company info enriched successfully')
       }
-    } catch (error) {
-      console.error('Error enriching company info:', error)
+    } catch (error: unknown) {
+      console.error('Error enriching company info:', formatErrorMessage(error))
       // エラーは silent に処理（ユーザーには影響しない）
     }
-  }
+  }, [])
+
+  const fetchCompany = useCallback(async () => {
+    try {
+      const supabase = createClient()
+
+      const { data, error } = await supabase
+        .from('companies_master')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error || !data) {
+        router.push('/company-search')
+        return
+      }
+
+      setCompany(data as CompanyMaster)
+
+      // 不足情報をチェックして自動取得
+      const basicInfo = data.basic_info || {}
+      const needsEnrichment =
+        !basicInfo.vision ||
+        !basicInfo.products ||
+        !basicInfo.business_model ||
+        !basicInfo.clients ||
+        !basicInfo.competitors
+
+      if (needsEnrichment) {
+        console.log('🔄 Auto-enriching company info...')
+        enrichCompanyInfo(data.id, data.company_name, basicInfo.official_name)
+      }
+    } catch (error: unknown) {
+      console.error('Error fetching company:', formatErrorMessage(error))
+      router.push('/company-search')
+    } finally {
+      setLoading(false)
+    }
+  }, [id, router, enrichCompanyInfo])
+
+  useEffect(() => {
+    fetchCompany()
+  }, [fetchCompany])
 
   if (loading) {
     return (

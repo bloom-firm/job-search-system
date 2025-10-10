@@ -31,7 +31,9 @@ export default function SearchBar({ onSearch, placeholder = "キーワードで�
       salaryMax,
       locations: selectedLocations
     })
-  }, [salaryMin, salaryMax, selectedLocations])
+    // onSearchは親から渡される関数なので依存配列に含めると無限ループになる可能性があるため除外
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyword, salaryMin, salaryMax, selectedLocations])
 
   const handleLocationApply = (locations: string[]) => {
     setSelectedLocations(locations)

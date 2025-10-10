@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
+import { formatErrorMessage } from '@/lib/utils/errors'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -106,10 +107,11 @@ export async function POST(request: NextRequest) {
       success: true,
       data: updatedBasicInfo
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error enriching company info:', error)
+    const errorMessage = formatErrorMessage(error, 'Failed to enrich company info')
     return NextResponse.json(
-      { error: error.message || 'Failed to enrich company info' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

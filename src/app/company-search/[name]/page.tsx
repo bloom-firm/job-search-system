@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Job } from '@/lib/types/job'
+import type { Job } from '@/lib/types'
 import JobCard from '@/app/components/JobCard'
 import { ArrowLeft, Loader2, Building } from 'lucide-react'
+import { formatErrorMessage } from '@/lib/utils/errors'
 
 export default function CompanyDetailPage() {
   const params = useParams()
@@ -16,11 +17,7 @@ export default function CompanyDetailPage() {
 
   const companyName = decodeURIComponent(params.name as string)
 
-  useEffect(() => {
-    fetchCompanyJobs()
-  }, [companyName])
-
-  const fetchCompanyJobs = async () => {
+  const fetchCompanyJobs = useCallback(async () => {
     try {
       const supabase = createClient()
       const { data, error } = await supabase
@@ -31,13 +28,18 @@ export default function CompanyDetailPage() {
 
       if (error) throw error
       setJobs(data || [])
-    } catch (err: any) {
-      console.error('Error fetching company jobs:', err)
-      setError(err.message || '求人情報の取得に失敗しました。')
+    } catch (error: unknown) {
+      console.error('Error fetching company jobs:', error)
+      const errorMessage = formatErrorMessage(error, '求人情報の取得に失敗しました。')
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }
+  }, [companyName])
+
+  useEffect(() => {
+    fetchCompanyJobs()
+  }, [fetchCompanyJobs])
 
   return (
     <div className="min-h-screen bg-gray-50">

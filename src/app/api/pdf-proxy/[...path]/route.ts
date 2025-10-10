@@ -4,16 +4,18 @@ import path from 'path'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    if (params.path.length < 2) {
+    const resolvedParams = await params
+
+    if (resolvedParams.path.length < 2) {
       return new NextResponse('Invalid path', { status: 400 })
     }
 
     // Unicode正規化（NFD→NFC）: 濁点・半濁点を合成
-    const companyName = params.path[0].normalize('NFC')
-    const jobTitle = params.path[1].normalize('NFC')
+    const companyName = resolvedParams.path[0].normalize('NFC')
+    const jobTitle = resolvedParams.path[1].normalize('NFC')
 
     // PDFディレクトリのパス
     const pdfDir = path.join(process.cwd(), 'public', 'pdf', companyName)
@@ -106,7 +108,7 @@ export async function GET(
 
           const fileBuffer = await fs.readFile(realPath)
 
-          return new NextResponse(fileBuffer, {
+          return new NextResponse(new Uint8Array(fileBuffer), {
             headers: {
               'Content-Type': 'application/pdf',
               'Content-Disposition': 'inline',
@@ -185,7 +187,7 @@ export async function GET(
 
         const fileBuffer = await fs.readFile(realPath)
 
-        return new NextResponse(fileBuffer, {
+        return new NextResponse(new Uint8Array(fileBuffer), {
           headers: {
             'Content-Type': 'application/pdf',
             'Content-Disposition': 'inline',
@@ -207,7 +209,7 @@ export async function GET(
 
     return new NextResponse('PDF not found', { status: 404 })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('PDF proxy error:', error)
     return new NextResponse('Error loading PDF', { status: 500 })
   }

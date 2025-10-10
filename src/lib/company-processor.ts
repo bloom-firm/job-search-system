@@ -1,36 +1,11 @@
-interface CompanyJSON {
-  company_name: string
-  public: {
-    basic_info: {
-      official_name: string
-      founded: string
-      headquarters: string
-      employees: string
-      business_description: string
-    }
-    work_style: {
-      work_format: string
-      annual_holidays: string
-      benefits: string
-    }
-  }
-  confidential: {
-    selection_process: Record<string, any>
-    recruitment_reality: Record<string, any>
-    internal_memo: Record<string, any>
-    ng_items: Record<string, any>
-    application_system: Record<string, any>
-    contract_info: Record<string, any>
-    target_details: Record<string, any>
-  }
-}
+import type { CompanyData } from './types/company'
 
-export function convertToJSON(filename: string, rawText: string): CompanyJSON {
+export function convertToJSON(filename: string, rawText: string): CompanyData {
   const companyName = filename.replace('.txt', '')
   const lines = rawText.split('\n')
 
   // Initialize the structure
-  const result: CompanyJSON = {
+  const result: CompanyData = {
     company_name: companyName,
     public: {
       basic_info: {

@@ -1,38 +1,13 @@
 import { NextResponse } from 'next/server'
 import fs from 'fs/promises'
 import path from 'path'
+import type { CompanyData } from '@/lib/types'
+import { formatErrorMessage } from '@/lib/utils/errors'
 
 const RAW_DIR = path.join(process.cwd(), 'src/data/companies/raw')
 const PROCESSED_DIR = path.join(process.cwd(), 'src/data/companies/processed')
 
-interface CompanyData {
-  company_name: string
-  public: {
-    basic_info: {
-      official_name: string
-      founded: string
-      headquarters: string
-      employees: string
-      business_description: string
-    }
-    work_style: {
-      work_format: string
-      annual_holidays: string
-      benefits: string
-    }
-  }
-  confidential: {
-    selection_process: Record<string, any>
-    recruitment_reality: Record<string, any>
-    internal_memo: Record<string, any>
-    ng_items: Record<string, any>
-    application_system: Record<string, any>
-    contract_info: Record<string, any>
-    target_details: Record<string, any>
-  }
-}
-
-async function parseRawFile(filename: string, content: string): Promise<CompanyData> {
+async function parseRawFile(filename: string): Promise<CompanyData> {
   const companyName = filename.replace('.txt', '')
 
   // Basic template structure
@@ -79,10 +54,10 @@ export async function POST() {
     for (const file of txtFiles) {
       try {
         const filePath = path.join(RAW_DIR, file)
-        const content = await fs.readFile(filePath, 'utf-8')
+        await fs.readFile(filePath, 'utf-8')
 
         // Parse the raw file content
-        const parsedData = await parseRawFile(file, content)
+        const parsedData = await parseRawFile(file)
 
         // Save to processed directory
         const outputFileName = file.endsWith('.txt') ? file.replace('.txt', '.json') : `${file}.json`
@@ -90,8 +65,9 @@ export async function POST() {
 
         await fs.writeFile(outputPath, JSON.stringify(parsedData, null, 2), 'utf-8')
         processedCount++
-      } catch (error: any) {
-        errors.push(`Error processing ${file}: ${error.message}`)
+      } catch (error: unknown) {
+        const errorMessage = formatErrorMessage(error)
+        errors.push(`Error processing ${file}: ${errorMessage}`)
       }
     }
 
@@ -100,11 +76,12 @@ export async function POST() {
       processed: processedCount,
       errors
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = formatErrorMessage(error)
     return NextResponse.json({
       success: false,
       processed: processedCount,
-      errors: [...errors, `Fatal error: ${error.message}`]
+      errors: [...errors, `Fatal error: ${errorMessage}`]
     }, { status: 500 })
   }
 }
