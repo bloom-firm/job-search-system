@@ -1,12 +1,18 @@
+'use client'
+
 import { MapPin, Briefcase, DollarSign, Calendar, Users, Building, FileText } from 'lucide-react'
 import { Job } from '@/lib/types/job'
 import Link from 'next/link'
+import { useState } from 'react'
 
 interface JobCardProps {
   job: Job
 }
 
 export default function JobCard({ job }: JobCardProps) {
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [pdfLoading, setPdfLoading] = useState(false)
+
   const formatSalary = (min: number | null | undefined, max: number | null | undefined) => {
     if (!min && !max) return '給与非公開'
     if (!min) return `〜${max?.toLocaleString()}万円`
@@ -14,24 +20,52 @@ export default function JobCard({ job }: JobCardProps) {
     return `${min.toLocaleString()}万円 - ${max.toLocaleString()}万円`
   }
 
-  const generatePdfViewerPath = (companyName: string, jobTitle: string) => {
-    return `/pdf/${encodeURIComponent(companyName)}/${encodeURIComponent(jobTitle)}`
-  }
+  const handlePdfClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
 
-  const pdfViewerUrl = generatePdfViewerPath(job.company_name, job.title)
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer')
+      return
+    }
+
+    setPdfLoading(true)
+    try {
+      const response = await fetch('/api/find-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ jobId: job.id }),
+      })
+
+      const data = await response.json()
+
+      if (data.success && data.url) {
+        setPdfUrl(data.url)
+        window.open(data.url, '_blank', 'noopener,noreferrer')
+      } else {
+        alert('PDFが見つかりませんでした')
+      }
+    } catch (error) {
+      console.error('Error fetching PDF URL:', error)
+      alert('PDFの取得に失敗しました')
+    } finally {
+      setPdfLoading(false)
+    }
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200 relative">
       {/* PDF表示ボタン - 右上に配置 */}
-      <a
-        href={pdfViewerUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute top-4 right-4 p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+      <button
+        onClick={handlePdfClick}
+        disabled={pdfLoading}
+        className="absolute top-4 right-4 p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         title="PDF詳細を表示"
       >
         <FileText className="w-5 h-5" />
-      </a>
+      </button>
 
       <div className="mb-4 pr-10">
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
@@ -102,15 +136,14 @@ export default function JobCard({ job }: JobCardProps) {
           {new Date(job.created_at).toLocaleDateString('ja-JP')}
         </span>
         <div className="flex gap-2">
-          <a
-            href={pdfViewerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-1"
+          <button
+            onClick={handlePdfClick}
+            disabled={pdfLoading}
+            className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FileText className="w-3 h-3" />
-            <span className="hidden sm:inline">PDF表示</span>
-          </a>
+            <span className="hidden sm:inline">{pdfLoading ? '読込中...' : 'PDF表示'}</span>
+          </button>
           <a
             href={`/jobs/${job.id}`}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium inline-block"

@@ -13,6 +13,8 @@ export default function JobDetailPage() {
   const [job, setJob] = useState<Job | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [pdfLoading, setPdfLoading] = useState(false)
 
   const jobId = params.id as string
 
@@ -28,6 +30,11 @@ export default function JobDetailPage() {
 
         if (error) throw error
         setJob(data)
+
+        // 求人データが取得できたらPDF URLを取得
+        if (data) {
+          fetchPdfUrl(data.id)
+        }
       } catch (error: unknown) {
         console.error('Error fetching job:', error)
         const errorMessage = formatErrorMessage(error, '求人情報の取得に失敗しました。')
@@ -40,6 +47,32 @@ export default function JobDetailPage() {
     fetchJob()
   }, [jobId])
 
+  const fetchPdfUrl = async (jobId: number) => {
+    setPdfLoading(true)
+    try {
+      const response = await fetch('/api/find-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ jobId }),
+      })
+
+      const data = await response.json()
+
+      if (data.success && data.url) {
+        setPdfUrl(data.url)
+      } else {
+        console.warn('PDF not found for this job')
+      }
+    } catch (error: unknown) {
+      console.error('Error fetching PDF URL:', error)
+    } finally {
+      setPdfLoading(false)
+    }
+  }
+
   const formatSalary = (min: number | null | undefined, max: number | null | undefined) => {
     if (!min && !max) return '給与非公開'
     if (!min) return `〜${max?.toLocaleString()}万円`
@@ -47,8 +80,10 @@ export default function JobDetailPage() {
     return `${min.toLocaleString()}万円 - ${max.toLocaleString()}万円`
   }
 
-  const generatePdfViewerPath = (companyName: string, jobTitle: string) => {
-    return `/pdf/${encodeURIComponent(companyName)}/${encodeURIComponent(jobTitle)}`
+  const handlePdfClick = () => {
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer')
+    }
   }
 
   if (loading) {
@@ -76,8 +111,6 @@ export default function JobDetailPage() {
     )
   }
 
-  const pdfViewerUrl = generatePdfViewerPath(job.company_name, job.title)
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -90,15 +123,25 @@ export default function JobDetailPage() {
             <ArrowLeft className="w-5 h-5" />
             戻る
           </button>
-          <a
-            href={pdfViewerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-          >
-            <FileText className="w-4 h-4" />
-            PDF表示
-          </a>
+          {pdfLoading ? (
+            <div className="px-4 py-2 bg-gray-400 text-white rounded-lg flex items-center gap-2 cursor-not-allowed">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              読込中...
+            </div>
+          ) : pdfUrl ? (
+            <button
+              onClick={handlePdfClick}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              PDF表示
+            </button>
+          ) : (
+            <div className="px-4 py-2 bg-gray-300 text-gray-600 rounded-lg flex items-center gap-2 cursor-not-allowed">
+              <FileText className="w-4 h-4" />
+              PDF未登録
+            </div>
+          )}
         </div>
 
         {/* メインコンテンツ */}
@@ -214,15 +257,25 @@ export default function JobDetailPage() {
           >
             戻る
           </button>
-          <a
-            href={pdfViewerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center gap-2"
-          >
-            <FileText className="w-4 h-4" />
-            PDF表示
-          </a>
+          {pdfLoading ? (
+            <div className="px-6 py-3 bg-gray-400 text-white rounded-lg flex items-center gap-2 cursor-not-allowed font-medium">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              読込中...
+            </div>
+          ) : pdfUrl ? (
+            <button
+              onClick={handlePdfClick}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              PDF表示
+            </button>
+          ) : (
+            <div className="px-6 py-3 bg-gray-300 text-gray-600 rounded-lg flex items-center gap-2 cursor-not-allowed font-medium">
+              <FileText className="w-4 h-4" />
+              PDF未登録
+            </div>
+          )}
         </div>
       </div>
     </div>
