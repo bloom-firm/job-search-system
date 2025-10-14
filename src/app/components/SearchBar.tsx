@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Search, MapPin } from 'lucide-react'
 import LocationModal from './LocationModal'
 
@@ -22,8 +22,35 @@ export default function SearchBar({ onSearch, placeholder = "キーワードで�
   const [salaryMax, setSalaryMax] = useState(2000)
   const [selectedLocations, setSelectedLocations] = useState<string[]>([])
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // キーワード以外のフィルタ変更時にリアルタイム検索
+  // キーワード入力時のdebounce処理（500ms）
+  useEffect(() => {
+    // 既存のタイマーをクリア
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    // 新しいタイマーをセット
+    debounceTimerRef.current = setTimeout(() => {
+      onSearch({
+        keyword,
+        salaryMin,
+        salaryMax,
+        locations: selectedLocations
+      })
+    }, 500)
+
+    // クリーンアップ
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyword])
+
+  // キーワード以外のフィルタ変更時は即座に検索
   useEffect(() => {
     onSearch({
       keyword,
@@ -31,9 +58,8 @@ export default function SearchBar({ onSearch, placeholder = "キーワードで�
       salaryMax,
       locations: selectedLocations
     })
-    // onSearchは親から渡される関数なので依存配列に含めると無限ループになる可能性があるため除外
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyword, salaryMin, salaryMax, selectedLocations])
+  }, [salaryMin, salaryMax, selectedLocations])
 
   const handleLocationApply = (locations: string[]) => {
     setSelectedLocations(locations)

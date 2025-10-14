@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import type { Job } from '@/lib/types'
 import JobCard from './JobCard'
 import SearchBar, { SearchFilters } from './SearchBar'
@@ -9,6 +8,14 @@ import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatErrorMessage } from '@/lib/utils/errors'
 
 const ITEMS_PER_PAGE = 24
+
+// API Routeのレスポンス型定義
+interface SearchJobsResponse {
+  results: Job[]
+  total: number
+  page: number
+  limit: number
+}
 
 export default function JobList() {
   const [jobs, setJobs] = useState<Job[]>([])
@@ -33,246 +40,64 @@ export default function JobList() {
     setError(null)
 
     try {
-      const supabase = createClient()
-      const offset = (page - 1) * ITEMS_PER_PAGE
+      // キーワードを配列に変換
+      const keywords = filters.keyword
+        ? filters.keyword.trim().split(/\s+/).filter(k => k.length > 0)
+        : []
 
-      // フィルタ条件の全体ログ
-      console.log('=== 検索条件 ===')
-      console.log('フィルタ:', JSON.stringify(filters, null, 2))
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Searching with keywords:', keywords)
+        console.log('📝 Filters:', filters)
+        console.log('📄 Page:', page)
+      }
 
-      // サンプルデータを出力
-      const { data: sample } = await supabase.from('jobs').select('title, salary_min, salary_max').limit(3)
-      console.log('DBの年収データ:', sample)
+      // 新しいAPI Routeを呼び出し
+      const response = await fetch('/api/search-jobs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          keywords,
+          filters: {
+            salaryMin: filters.salaryMin,
+            salaryMax: filters.salaryMax,
+            locations: filters.locations,
+          },
+          page,
+          limit: ITEMS_PER_PAGE,
+        }),
+      })
 
-      // 件数取得のクエリ
-      let countQuery = supabase
-        .from('jobs')
-        .select('*', { count: 'exact', head: true })
+      if (!response.ok) {
+        // ステータスコード別のエラー処理
+        if (response.status === 401) {
+          throw new Error('認証が必要です。再度ログインしてください。')
+        } else if (response.status === 429) {
+          throw new Error('リクエストが多すぎます。しばらく待ってから再度お試しください。')
+        } else if (response.status === 400) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || '検索条件が正しくありません。')
+        }
 
-      // データ取得のクエリ
-      let dataQuery = supabase
-        .from('jobs')
-        .select('*')
-        .order('created_at', { ascending: false })
+        throw new Error('検索に失敗しました。')
+      }
 
-      // フリーワード検索の実装（LIKE検索 - 広範囲取得）
-      // 複数キーワードのAND検索はクライアント側で実施
-      const searchKeywords = filters.keyword ? filters.keyword.trim().split(/\s+/).filter(k => k.length > 0) : []
-      let currentSearchCondition = '' // バッチ取得用に検索条件を保存
+      const data: SearchJobsResponse = await response.json()
 
-      // キーワード検索がある場合は、他のフィルタを適用せずにキーワードのみで検索
-      // クライアント側で全てのフィルタリングを行う
-      if (searchKeywords.length > 0) {
-        console.log('🔍 検索キーワード（AND検索）:', searchKeywords)
-
-        // まずは全キーワードをOR条件で広範囲に取得
-        // クライアント側で後からAND条件でフィルタリング
-        const allSearchConditions: string[] = []
-
-        searchKeywords.forEach(keyword => {
-          allSearchConditions.push(
-            `title.ilike.%${keyword}%`,
-            `company_name.ilike.%${keyword}%`,
-            `description.ilike.%${keyword}%`,
-            `requirements.ilike.%${keyword}%`,
-            `preferred_skills.ilike.%${keyword}%`,
-            `location.ilike.%${keyword}%`,
-            `job_type.ilike.%${keyword}%`,
-            `industry_category.ilike.%${keyword}%`,
-            `employment_type.ilike.%${keyword}%`,
-            `original_md_content.ilike.%${keyword}%`  // 元のMarkdown内容も検索対象に追加
-          )
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ API Response:', {
+          total: data.total,
+          resultsCount: data.results.length,
+          page: data.page,
         })
-
-        currentSearchCondition = allSearchConditions.join(',')
-        console.log('📊 DB検索条件（OR）:', currentSearchCondition)
-
-        // まずは広範囲に取得（OR検索）
-        countQuery = countQuery.or(currentSearchCondition)
-        dataQuery = dataQuery.or(currentSearchCondition)
-
-        // キーワード検索時は他のフィルタをDB側で適用しない
-        console.log('⚠️ キーワード検索時：他のフィルタはクライアント側で適用')
-      } else {
-        // キーワード検索がない場合のみ、他のフィルタをDB側で適用
-
-        // 年収範囲フィルタ
-        if (filters.salaryMin > 300 || filters.salaryMax < 2000) {
-          const salaryMinValue = filters.salaryMin
-          const salaryMaxValue = filters.salaryMax
-
-          console.log('✓ 年収フィルタ適用:', { salaryMinValue, salaryMaxValue })
-
-          countQuery = countQuery.lte('salary_min', salaryMaxValue).gte('salary_max', salaryMinValue)
-          dataQuery = dataQuery.lte('salary_min', salaryMaxValue).gte('salary_max', salaryMinValue)
-        } else {
-          console.log('✗ 年収フィルタなし')
-        }
-
-        // 勤務地フィルタ
-        if (filters.locations.length > 0) {
-          console.log('✓ 勤務地フィルタ適用:', filters.locations)
-          const locationConditions = filters.locations.map(loc => `location.ilike.%${loc}%`).join(',')
-          countQuery = countQuery.or(locationConditions)
-          dataQuery = dataQuery.or(locationConditions)
-        } else {
-          console.log('✗ 勤務地フィルタなし')
-        }
-
-        // キーワード検索なしの場合はページネーション適用
-        console.log(`📄 ページネーション適用: ${offset}〜${offset + ITEMS_PER_PAGE - 1}`)
-        dataQuery = dataQuery.range(offset, offset + ITEMS_PER_PAGE - 1)
       }
 
-      // キーワード検索時は複数ページに分けて取得（Supabaseの1000件制限対策）
-      let newJobs: Job[] = []
-      let countResult: { count: number | null; error: unknown } | null = null // スコープ外で定義
+      // 状態を更新
+      setJobs(data.results)
+      setTotalCount(data.total)
 
-      if (searchKeywords.length > 0) {
-        console.log('⚠️ キーワード検索時：複数ページで全件取得（1000件制限回避）')
-
-        // Supabaseは1クエリで最大1000件しか取得できないため、
-        // 複数回に分けて取得する
-        const BATCH_SIZE = 1000
-        let hasMore = true
-        let batchNumber = 0
-
-        while (hasMore && batchNumber < 10) { // 最大10,000件まで（10バッチ）
-          const batchOffset = batchNumber * BATCH_SIZE
-          console.log(`📦 バッチ${batchNumber + 1}取得中 (${batchOffset}〜${batchOffset + BATCH_SIZE - 1})...`)
-
-          const batchQuery = supabase
-            .from('jobs')
-            .select('*')
-            .or(currentSearchCondition) // 検索条件を再適用
-            .order('created_at', { ascending: false })
-            .range(batchOffset, batchOffset + BATCH_SIZE - 1)
-
-          const { data: batchData, error: batchError } = await batchQuery
-
-          if (batchError) throw batchError
-
-          if (batchData && batchData.length > 0) {
-            newJobs = [...newJobs, ...batchData]
-            console.log(`   ✓ ${batchData.length}件取得 (累計: ${newJobs.length}件)`)
-
-            // 1000件未満なら最後のバッチ
-            if (batchData.length < BATCH_SIZE) {
-              hasMore = false
-            }
-          } else {
-            hasMore = false
-          }
-
-          batchNumber++
-        }
-
-        console.log(`🎯 DB取得完了: 合計${newJobs.length}件`)
-      } else {
-        // キーワード検索なしの場合は通常通り
-        const [countRes, dataResult] = await Promise.all([
-          countQuery,
-          dataQuery
-        ])
-
-        countResult = countRes // 外部スコープに代入
-
-        if (countResult.error) throw countResult.error
-        if (dataResult.error) throw dataResult.error
-
-        newJobs = dataResult.data || []
-      }
-
-      // DB取得後のデバッグログ
-      if (searchKeywords.length > 0) {
-        console.log('DB取得データサンプル:', newJobs.slice(0, 3).map(j => ({
-          title: j.title,
-          company: j.company_name,
-          requirements: j.requirements?.substring(0, 100)
-        })))
-      }
-
-      // クライアント側でAND検索フィルタリング
-      if (searchKeywords.length > 0) {
-        console.log('🔄 クライアント側フィルタリング開始')
-        console.log('検索キーワード:', searchKeywords)
-
-        const beforeCount = newJobs.length
-
-        newJobs = newJobs.filter(job => {
-          // 1. キーワードAND検索：全てのキーワードが、いずれかのカラムに含まれている必要がある
-          const keywordMatch = searchKeywords.every(keyword => {
-            const regex = new RegExp(keyword, 'i')
-
-            const match = (
-              regex.test(job.title || '') ||
-              regex.test(job.company_name || '') ||
-              regex.test(job.description || '') ||
-              regex.test(job.requirements || '') ||
-              regex.test(job.preferred_skills || '') ||
-              regex.test(job.location || '') ||
-              regex.test(job.job_type || '') ||
-              regex.test(job.industry_category || '') ||
-              regex.test(job.employment_type || '') ||
-              regex.test(job.original_md_content || '')  // 元のMarkdown内容も検索対象
-            )
-
-            if (!match) {
-              console.log(`❌ キーワード「${keyword}」がヒットしない: ${job.title} (${job.company_name})`)
-            }
-
-            return match
-          })
-
-          if (!keywordMatch) return false
-
-          // 2. 年収フィルタ（キーワード検索時のみクライアント側で適用）
-          if (filters.salaryMin > 300 || filters.salaryMax < 2000) {
-            const salaryMin = job.salary_min || 0
-            const salaryMax = job.salary_max || 9999
-
-            // 求人の年収範囲とフィルタの年収範囲が重複するか確認
-            const salaryMatch = salaryMin <= filters.salaryMax && salaryMax >= filters.salaryMin
-
-            if (!salaryMatch) {
-              console.log(`💰 年収フィルタで除外: ${job.title} (${salaryMin}-${salaryMax}万円)`)
-              return false
-            }
-          }
-
-          // 3. 勤務地フィルタ（キーワード検索時のみクライアント側で適用）
-          if (filters.locations.length > 0) {
-            const locationMatch = filters.locations.some(loc =>
-              (job.location || '').toLowerCase().includes(loc.toLowerCase())
-            )
-
-            if (!locationMatch) {
-              console.log(`📍 勤務地フィルタで除外: ${job.title} (${job.location})`)
-              return false
-            }
-          }
-
-          console.log(`✅ フィルタ通過: ${job.title} (${job.company_name})`)
-          return true
-        })
-
-        console.log(`📊 フィルタリング結果: ${newJobs.length}件（元: ${beforeCount}件）`)
-
-        // キーワード検索時はクライアント側でページネーション
-        const totalFiltered = newJobs.length
-        const startIdx = offset
-        const endIdx = offset + ITEMS_PER_PAGE
-        newJobs = newJobs.slice(startIdx, endIdx)
-        console.log(`📄 クライアント側ページネーション: ${startIdx}〜${endIdx} (全${totalFiltered}件中${newJobs.length}件表示)`)
-
-        setJobs(newJobs)
-        setTotalCount(totalFiltered)
-      } else {
-        // キーワード検索なしの場合はDB側でページネーション済み
-        const total = countResult?.count || 0
-        setJobs(newJobs)
-        setTotalCount(total)
-      }
     } catch (error: unknown) {
       console.error('Error fetching jobs:', error)
       const errorMessage = formatErrorMessage(error, '求人情報の取得に失敗しました。')
