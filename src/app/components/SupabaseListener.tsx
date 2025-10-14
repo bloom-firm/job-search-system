@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+const isDevelopment = process.env.NODE_ENV === 'development'
+
 export default function SupabaseListener() {
   const router = useRouter()
 
@@ -13,8 +15,10 @@ export default function SupabaseListener() {
     // 認証状態の変化を監視
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔔 [SupabaseListener] Auth event:', event)
-        console.log('🔔 [SupabaseListener] Session exists:', !!session)
+        if (isDevelopment) {
+          console.log('🔔 [SupabaseListener] Auth event:', event)
+          console.log('🔔 [SupabaseListener] Session exists:', !!session)
+        }
 
         try {
           // サーバー側にセッション情報を同期
@@ -28,15 +32,21 @@ export default function SupabaseListener() {
           })
 
           if (!response.ok) {
-            console.error('❌ [SupabaseListener] Failed to sync session:', response.status)
+            if (isDevelopment) {
+              console.error('❌ [SupabaseListener] Failed to sync session:', response.status)
+            }
           } else {
-            console.log('✅ [SupabaseListener] Session synced successfully')
+            if (isDevelopment) {
+              console.log('✅ [SupabaseListener] Session synced successfully')
+            }
           }
 
           // サーバーコンポーネントの状態を更新
           router.refresh()
         } catch (error) {
-          console.error('❌ [SupabaseListener] Error syncing session:', error)
+          if (isDevelopment) {
+            console.error('❌ [SupabaseListener] Error syncing session:', error)
+          }
         }
       }
     )

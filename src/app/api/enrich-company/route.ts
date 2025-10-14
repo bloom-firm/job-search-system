@@ -3,6 +3,9 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 import { formatErrorMessage } from '@/lib/utils/errors'
+import { checkRateLimit, getRateLimitIdentifier } from '@/lib/rate-limit'
+
+const isDevelopment = process.env.NODE_ENV === 'development'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -13,6 +16,27 @@ const openai = new OpenAI({ apiKey: openaiApiKey })
 
 export async function POST(request: NextRequest) {
   try {
+    // レート制限チェック（OpenAI APIコスト対策: 5リクエスト/分）
+    const identifier = getRateLimitIdentifier(request)
+    const rateLimit = checkRateLimit(identifier, {
+      limit: 5,
+      windowSeconds: 60
+    })
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'レート制限を超過しました。しばらくしてから再度お試しください。' },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '5',
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+            'X-RateLimit-Reset': String(rateLimit.resetAt),
+          }
+        }
+      )
+    }
+
     // 認証チェック
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -33,7 +57,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`🔍 Enriching company info for: ${companyName}`)
+    if (isDevelopment) {
+      console.log(`🔍 Enriching company info for: ${companyName}`)
+    }
 
     // OpenAI APIで企業情報を取得
     const searchName = officialName || companyName
@@ -68,7 +94,10 @@ export async function POST(request: NextRequest) {
     }
 
     const enrichedData = JSON.parse(responseText)
-    console.log('📊 Enriched data:', enrichedData)
+
+    if (isDevelopment) {
+      console.log('📊 Enriched data:', enrichedData)
+    }
 
     // 既存のbasic_infoを取得
     const { data: existingCompany, error: fetchError } = await supabaseAdmin
@@ -101,14 +130,18 @@ export async function POST(request: NextRequest) {
       throw updateError
     }
 
-    console.log('✅ Company info enriched successfully')
+    if (isDevelopment) {
+      console.log('✅ Company info enriched successfully')
+    }
 
     return NextResponse.json({
       success: true,
       data: updatedBasicInfo
     })
   } catch (error: unknown) {
-    console.error('Error enriching company info:', error)
+    if (isDevelopment) {
+      console.error('Error enriching company info:', error)
+    }
     const errorMessage = formatErrorMessage(error, 'Failed to enrich company info')
     return NextResponse.json(
       { error: errorMessage },
