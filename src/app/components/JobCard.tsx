@@ -116,7 +116,8 @@ export default function JobCard({ job }: JobCardProps) {
         </span>
       </div>
 
-      {job.requirements && (
+      {/* 必須要件・歓迎要件を非表示 */}
+      {/* {job.requirements && (
         <div className="mb-4">
           <h4 className="text-sm font-semibold text-gray-700 mb-2">必須要件</h4>
           <p className="text-xs text-gray-600 line-clamp-2">{job.requirements}</p>
@@ -128,7 +129,7 @@ export default function JobCard({ job }: JobCardProps) {
           <h4 className="text-sm font-semibold text-gray-700 mb-2">歓迎要件</h4>
           <p className="text-xs text-gray-600 line-clamp-2">{job.preferred_skills}</p>
         </div>
-      )}
+      )} */}
 
       <div className="flex justify-between items-center pt-4 border-t border-gray-200">
         <span className="text-xs text-gray-500 flex items-center">

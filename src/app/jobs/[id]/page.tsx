@@ -190,8 +190,8 @@ export default function JobDetailPage() {
             </p>
           </div>
 
-          {/* 必須要件 */}
-          {job.requirements && (
+          {/* 必須要件・歓迎要件を非表示 */}
+          {/* {job.requirements && (
             <div className="mb-8">
               <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
                 必須要件
@@ -202,7 +202,6 @@ export default function JobDetailPage() {
             </div>
           )}
 
-          {/* 歓迎要件 */}
           {job.preferred_skills && (
             <div className="mb-8">
               <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
@@ -212,7 +211,7 @@ export default function JobDetailPage() {
                 {job.preferred_skills}
               </p>
             </div>
-          )}
+          )} */}
 
           {/* 福利厚生 */}
           {job.benefits && (
